@@ -17,13 +17,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Self-check fixtures
         run: python3 claimgate.py --self-check
+
       - name: Judge claim.json when present
         id: judge
         run: |
           mkdir -p out
-          if [ -f claim.json ]; then
+          if [ -f gate.py ] && [ -f claim.json ]; then
+            python3 gate.py --claim claim.json --out out || true
+            echo "has_claim=true" >> "$GITHUB_OUTPUT"
+          elif [ -f claim.json ]; then
             python3 claimgate.py --claim claim.json --out out || true
             echo "has_claim=true" >> "$GITHUB_OUTPUT"
           else
@@ -31,13 +36,18 @@ jobs:
             printf '%s\n' '## Claim Gate' '' 'No claim.json. Fixture self-check passed.' > out/comment.md
             echo "has_claim=false" >> "$GITHUB_OUTPUT"
           fi
+          test -f out/comment.md || printf '%s\n' '## Claim Gate' '' 'INCOMPLETE: no comment artifact.' > out/comment.md
+          test -f out/verdict.txt || echo INCOMPLETE > out/verdict.txt
           echo "verdict=$(tr -d '\n' < out/verdict.txt)" >> "$GITHUB_OUTPUT"
+          cat out/comment.md
+
       - name: Sticky PR comment
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: claim-gate
           path: out/comment.md
+
       - name: Fail closed on a submitted claim
         if: steps.judge.outputs.has_claim == 'true'
         run: |
