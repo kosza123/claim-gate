@@ -1,0 +1,9 @@
+{
+  "producer": "coding-agent",
+  "claim_success": true,
+  "change": "DROP NOT NULL on users.email",
+  "laws": ["migration"],
+  "evidence": {
+    "users_after_migration": [{"id": 7, "email": null}]
+  }
+}

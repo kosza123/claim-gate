@@ -1,0 +1,7 @@
+{
+  "producer": "coding-agent",
+  "claim_success": true,
+  "change": "ship the endpoint",
+  "laws": ["pii"],
+  "evidence": {}
+}

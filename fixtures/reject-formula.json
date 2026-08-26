@@ -1,0 +1,9 @@
+{
+  "producer": "coding-agent",
+  "claim_success": true,
+  "change": "documented the inequality as always true",
+  "laws": ["formula"],
+  "evidence": {
+    "samples": [0.5, 0.0, 1.0, 2.0]
+  }
+}
