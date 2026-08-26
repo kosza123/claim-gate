@@ -56,12 +56,23 @@ def check_consistency(evidence):
         return {'consistency_score': score, 'floor': floor, 'broken_law': 'consistency at or above floor for SUCCESS'}
     return None
 
+def check_no_exfil(evidence):
+    for call in evidence.get('outbound', []):
+        dest = str(call.get('destination') or '')
+        kind = str(call.get('kind') or '')
+        if kind == 'model':
+            continue
+        if dest and dest not in ('browser-local', 'model'):
+            return {'destination': dest, 'kind': kind, 'broken_law': 'notes stay in the browser except the model call'}
+    return None
+
 CHECKS = {
     'balance_never_negative': check_balance,
     'email_not_null': check_email,
     'formula_always_holds': check_formula,
     'facts_non_empty': check_facts,
     'consistency_floor': check_consistency,
+    'no_exfil': check_no_exfil,
     'none': lambda _e: None,
 }
 
