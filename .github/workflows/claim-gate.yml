@@ -24,23 +24,22 @@ jobs:
         run: |
           mkdir -p out
           if [ -f claim.json ]; then
-            python3 claimgate.py --claim claim.json --out out || true
+            python3 gate.py --claim claim.json --out out || true
             echo "has_claim=true" >> "$GITHUB_OUTPUT"
           else
             echo ADMIT > out/verdict.txt
             printf '%s\n' '## Claim Gate' '' 'No claim.json. Fixture self-check passed.' > out/comment.md
             echo "has_claim=false" >> "$GITHUB_OUTPUT"
           fi
+          test -f out/comment.md || echo '## Claim Gate' > out/comment.md
+          test -f out/verdict.txt || echo INCOMPLETE > out/verdict.txt
           echo "verdict=$(tr -d '\n' < out/verdict.txt)" >> "$GITHUB_OUTPUT"
-      - name: Sticky PR comment
+          cat out/comment.md
+      - uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: claim-gate
           path: out/comment.md
       - name: Fail closed on a submitted claim
         if: steps.judge.outputs.has_claim == 'true'
-        run: |
-          verdict=$(tr -d '\n' < out/verdict.txt)
-          echo "verdict=$verdict"
-          [ "$verdict" = "ADMIT" ] || exit 1
+        run: test "$(tr -d '\n' < out/verdict.txt)" = "ADMIT"
