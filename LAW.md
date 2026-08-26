@@ -30,3 +30,17 @@ Durable statements. Implementations are disposable.
 - statement: API responses never contain raw national IDs.
 - check: none
 - require: response_trace
+
+## facts
+
+- id: facts
+- statement: SUCCESS/ALLOW requires non-empty supporting facts.
+- check: facts_non_empty
+- require: facts
+
+## consistency
+
+- id: consistency
+- statement: SUCCESS/ALLOW requires consistency score at or above 0.70.
+- check: consistency_floor
+- require: consistency_score
