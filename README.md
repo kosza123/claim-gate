@@ -13,9 +13,10 @@ python3 gate.py --claim fixtures/reject-balance.json
 
 `gate.py` is the judge. `claimgate.py --self-check` is the fixture demo.
 
-## Live proofs (do not merge the REJECT ones)
+## Live proofs (do not merge REJECT / INCOMPLETE)
 
-- Product demo REJECT: https://github.com/kosza123/claim-gate/pull/1
+- Product REJECT: https://github.com/kosza123/claim-gate/pull/1
+- Product INCOMPLETE: https://github.com/kosza123/claim-gate/pull/3
 - Consumer REJECT: https://github.com/kosza123/claim-gate-demo/pull/1
 - Consumer ADMIT: https://github.com/kosza123/claim-gate-demo/pull/2
 
