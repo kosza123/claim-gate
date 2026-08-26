@@ -1,26 +1,27 @@
 # Claim Gate
 
-Agent says *done*. The gate does not take that as evidence.
+**Label: DEMO_ONLY — NOT_TEAM_READY**
 
-ADMIT / REJECT / INCOMPLETE + witness + receipt.
+Agent says *done*. That is not evidence.
+
+`ADMIT` / `REJECT` / `INCOMPLETE`. Fail closed.
+
+Trusted: `gate.py`, `action.yml`, `LAW.md` from the **base** ref.
+Untrusted: `claim.json` from the PR.
 
 ## Run locally
 
-    python3 claimgate.py --self-check
-    python3 gate.py --claim fixtures/reject-balance.json
+    python3 gate.py --self-check
+    python3 gate.py --claim fixtures/reject-balance.json --law fixtures/laws-demo.md
 
 ## Live proofs (do not merge REJECT / INCOMPLETE)
 
-- Product REJECT: https://github.com/kosza123/claim-gate/pull/1
-- Product INCOMPLETE: https://github.com/kosza123/claim-gate/pull/3
-- Consumer via Action: https://github.com/kosza123/claim-gate-demo/pull/3
-- Famada false SUCCESS: https://github.com/kosza123/Famada-AI-progress-Agents/pull/1
-- Famada install (merged): https://github.com/kosza123/Famada-AI-progress-Agents/pull/2
-- VOLT exfil REJECT: https://github.com/kosza123/VOLT/pull/1
+- REJECT: https://github.com/kosza123/claim-gate/pull/1
+- INCOMPLETE: https://github.com/kosza123/claim-gate/pull/3
+- Consumer Action: https://github.com/kosza123/claim-gate-demo/pull/3
 
-## Install in another repo
+## Install
 
-    - uses: actions/checkout@v4
-    - uses: kosza123/claim-gate@main
+See `INSTALL.md`. Pin a commit SHA. Do not use `@main`.
 
 Hamada / kosza123-semantic-language-2045 was copied, not edited.

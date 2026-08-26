@@ -1,5 +1,5 @@
 name: Claim Gate
-description: Judge claim.json against LAW.md. ADMIT / REJECT / INCOMPLETE + witness.
+description: Fail-closed judge. Policy from base ref. Verdicts in RUNNER_TEMP.
 runs:
   using: composite
   steps:
@@ -8,25 +8,83 @@ runs:
         python-version: "3.12"
     - name: Judge
       shell: bash
+      env:
+        HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        BASE_REF: ${{ github.event.pull_request.base.ref }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        RUN_ID: ${{ github.run_id }}
+        EVENT: ${{ github.event_name }}
       run: |
-        mkdir -p out
-        if [ ! -f LAW.md ]; then
-          echo INCOMPLETE > out/verdict.txt
-          printf '%s\n' '## Claim Gate' '' 'INCOMPLETE — no LAW.md.' > out/comment.md
-        elif [ ! -f claim.json ]; then
-          echo ADMIT > out/verdict.txt
-          printf '%s\n' '## Claim Gate' '' 'No claim.json. Nothing to judge.' > out/comment.md
+        set -euo pipefail
+        OUT="${RUNNER_TEMP}/claim-gate"
+        rm -rf "$OUT"
+        mkdir -p "$OUT"
+        ACTION="${{ github.action_path }}"
+
+        resolve_law() {
+          if [ "$EVENT" = "pull_request" ] && [ -n "${BASE_REF:-}" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_REF" 2>/dev/null || true
+            if git cat-file -e "origin/${BASE_REF}:LAW.md" 2>/dev/null; then
+              git show "origin/${BASE_REF}:LAW.md" > "$OUT/LAW.md"
+              return 0
+            fi
+            if [ -n "${BASE_SHA:-}" ] && git cat-file -e "${BASE_SHA}:LAW.md" 2>/dev/null; then
+              git show "${BASE_SHA}:LAW.md" > "$OUT/LAW.md"
+              return 0
+            fi
+            echo INCOMPLETE > "$OUT/verdict.txt"
+            printf '%s\n' '## Claim Gate' '' '**INCOMPLETE** — no LAW.md on the base ref. Policy cannot come from this PR.' > "$OUT/comment.md"
+            return 1
+          fi
+          if [ -f LAW.md ]; then
+            cp LAW.md "$OUT/LAW.md"
+            return 0
+          fi
+          echo INCOMPLETE > "$OUT/verdict.txt"
+          printf '%s\n' '## Claim Gate' '' '**INCOMPLETE** — no trusted LAW.md.' > "$OUT/comment.md"
+          return 1
+        }
+
+        if ! resolve_law; then
+          cat "$OUT/comment.md"
         else
-          python3 "${{ github.action_path }}/gate.py" --claim claim.json --law LAW.md --out out || true
+          CLAIM=""
+          if [ -f claim.json ]; then
+            cp claim.json "$OUT/claim.json"
+            CLAIM="$OUT/claim.json"
+          fi
+          if [ -z "$CLAIM" ]; then
+            echo INCOMPLETE > "$OUT/verdict.txt"
+            printf '%s\n' '## Claim Gate' '' '**INCOMPLETE** — no claim.json. Skipping a claim is not ADMIT.' > "$OUT/comment.md"
+            cat "$OUT/comment.md"
+          else
+            set +e
+            python3 "$ACTION/gate.py" \
+              --claim "$CLAIM" \
+              --law "$OUT/LAW.md" \
+              --out "$OUT" \
+              --head-sha "$HEAD_SHA" \
+              --base-sha "${BASE_SHA:-}" \
+              --run-id "$RUN_ID"
+            rc=$?
+            set -e
+            if [ ! -f "$OUT/verdict.txt" ] || [ ! -f "$OUT/comment.md" ]; then
+              echo INCOMPLETE > "$OUT/verdict.txt"
+              printf '%s\n' '## Claim Gate' '' '**INCOMPLETE** — judge crashed before writing a verdict.' > "$OUT/comment.md"
+            fi
+            cat "$OUT/comment.md"
+            if [ "$rc" -ge 2 ]; then
+              echo INCOMPLETE > "$OUT/verdict.txt"
+            fi
+          fi
         fi
-        test -f out/comment.md || echo '## Claim Gate' > out/comment.md
-        test -f out/verdict.txt || echo INCOMPLETE > out/verdict.txt
-        cat out/comment.md
+        cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md"
+        cp "$OUT/verdict.txt" "$GITHUB_WORKSPACE/claim-gate-verdict.txt"
     - uses: marocchino/sticky-pull-request-comment@v2
       if: github.event_name == 'pull_request'
       with:
         header: claim-gate
-        path: out/comment.md
+        path: claim-gate-comment.md
     - name: Fail closed
       shell: bash
-      run: test "$(tr -d '\n' < out/verdict.txt)" = "ADMIT"
+      run: test "$(tr -d '\n' < "${RUNNER_TEMP}/claim-gate/verdict.txt")" = "ADMIT"

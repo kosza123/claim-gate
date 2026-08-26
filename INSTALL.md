@@ -1,12 +1,16 @@
-# Install Claim Gate in another repo
+# Install
 
-```yaml
-- uses: actions/checkout@v4
-- uses: kosza123/claim-gate@main
-```
+Pin a full commit SHA. `@main` is not an install.
 
-Need `LAW.md` + `claim.json` on the PR.
-`REJECT` / `INCOMPLETE` blocks merge.
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: kosza123/claim-gate@PIN_SHA
 
-Access is already set: Actions in other private repos owned by kosza123 can pull this Action.
-Proof: https://github.com/kosza123/claim-gate-demo/pull/3 (no local `gate.py`).
+Need `LAW.md` on the **default branch** (base). PR copies of `LAW.md` are ignored.
+
+Need `claim.json` on the PR. Missing claim → INCOMPLETE, not ADMIT.
+
+`REJECT` / `INCOMPLETE` fail the job. Turn on a branch ruleset: required check `gate`, protect `main`.
+
+CODEOWNERS must cover `.github/`, `LAW.md`.
