@@ -45,6 +45,27 @@ runs:
           return 1
         }
 
+        if [ "$EVENT" = "pull_request" ]; then
+          if [ ! -f LAW.md ]; then
+            echo INCOMPLETE > "$OUT/verdict.txt"
+            printf '%s\n' '## Claim Gate' '' '**INCOMPLETE** — this PR deletes LAW.md. Next base would have no policy.' > "$OUT/comment.md"
+            cat "$OUT/comment.md"
+            cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md"
+            cp "$OUT/verdict.txt" "$GITHUB_WORKSPACE/claim-gate-verdict.txt"
+            exit 0
+          fi
+          set +e
+          python3 "$ACTION/gate.py" --lint-law LAW.md --out "$OUT"
+          lint_rc=$?
+          set -e
+          if [ "$lint_rc" -ne 0 ]; then
+            cat "$OUT/comment.md"
+            cp "$OUT/comment.md" "$GITHUB_WORKSPACE/claim-gate-comment.md"
+            cp "$OUT/verdict.txt" "$GITHUB_WORKSPACE/claim-gate-verdict.txt"
+            exit 0
+          fi
+        fi
+
         if ! resolve_law; then
           cat "$OUT/comment.md"
         else
