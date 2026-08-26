@@ -9,14 +9,14 @@ ADMIT / REJECT / INCOMPLETE + witness + receipt.
     python3 claimgate.py --self-check
     python3 gate.py --claim fixtures/reject-balance.json
 
-gate.py is the judge. claimgate.py --self-check is the fixture demo.
-
 ## Live proofs (do not merge REJECT / INCOMPLETE)
 
 - Product REJECT: https://github.com/kosza123/claim-gate/pull/1
 - Product INCOMPLETE: https://github.com/kosza123/claim-gate/pull/3
 - Consumer via Action: https://github.com/kosza123/claim-gate-demo/pull/3
 - Famada false SUCCESS: https://github.com/kosza123/Famada-AI-progress-Agents/pull/1
+- Famada install (merged): https://github.com/kosza123/Famada-AI-progress-Agents/pull/2
+- VOLT exfil REJECT: https://github.com/kosza123/VOLT/pull/1
 
 ## Install in another repo
 
