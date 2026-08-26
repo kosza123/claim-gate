@@ -32,35 +32,12 @@ jobs:
             echo "has_claim=false" >> "$GITHUB_OUTPUT"
           fi
           echo "verdict=$(tr -d '\n' < out/verdict.txt)" >> "$GITHUB_OUTPUT"
-      - name: Comment on pull request
+      - name: Sticky PR comment
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          script: |
-            const fs = require('fs');
-            const body = fs.readFileSync('out/comment.md', 'utf8');
-            const text = '<!-- claim-gate -->\n' + body;
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const previous = comments.find((c) => c.body && c.body.includes('<!-- claim-gate -->'));
-            if (previous) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: previous.id,
-                body: text,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: text,
-              });
-            }
+          header: claim-gate
+          path: out/comment.md
       - name: Fail closed on a submitted claim
         if: steps.judge.outputs.has_claim == 'true'
         run: |
