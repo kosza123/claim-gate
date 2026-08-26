@@ -17,13 +17,15 @@ python3 gate.py --claim fixtures/reject-balance.json
 
 - Product REJECT: https://github.com/kosza123/claim-gate/pull/1
 - Product INCOMPLETE: https://github.com/kosza123/claim-gate/pull/3
-- Consumer REJECT: https://github.com/kosza123/claim-gate-demo/pull/1
+- Consumer REJECT (vendored): https://github.com/kosza123/claim-gate-demo/pull/1
 - Consumer ADMIT: https://github.com/kosza123/claim-gate-demo/pull/2
+- Consumer REJECT via `uses: kosza123/claim-gate@main`: https://github.com/kosza123/claim-gate-demo/pull/3
 
 ## Install in another repo
 
-See `INSTALL.md`. Both repos are private, so `uses: kosza123/claim-gate@main` needs:
-Settings → Actions → General → Access → accessible from repos owned by kosza123.
-Until then, copy `gate.py` (what the demo repo does).
+```yaml
+- uses: actions/checkout@v4
+- uses: kosza123/claim-gate@main
+```
 
 Hamada / `kosza123-semantic-language-2045` was copied, not edited.
