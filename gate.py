@@ -43,10 +43,25 @@ def check_formula(evidence):
             return {'x': x, 'left': x * x, 'right': 2.0 * x, 'broken_law': 'x^2 >= 2x for all real x'}
     return None
 
+def check_facts(evidence):
+    facts = evidence.get('facts')
+    if not facts:
+        return {'facts': facts, 'broken_law': 'SUCCESS/ALLOW requires non-empty facts'}
+    return None
+
+def check_consistency(evidence):
+    score = float(evidence.get('consistency_score', 0))
+    floor = float(evidence.get('consistency_floor', 0.70))
+    if score < floor:
+        return {'consistency_score': score, 'floor': floor, 'broken_law': 'consistency at or above floor for SUCCESS'}
+    return None
+
 CHECKS = {
     'balance_never_negative': check_balance,
     'email_not_null': check_email,
     'formula_always_holds': check_formula,
+    'facts_non_empty': check_facts,
+    'consistency_floor': check_consistency,
     'none': lambda _e: None,
 }
 
