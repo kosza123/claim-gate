@@ -1,0 +1,29 @@
+name: Claim Gate
+description: Judge claim.json against LAW.md. ADMIT / REJECT / INCOMPLETE + witness.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Judge
+      shell: bash
+      run: |
+        mkdir -p out
+        if [ -f claim.json ] && [ -f LAW.md ]; then
+          python3 "${{ github.action_path }}/gate.py" --claim claim.json --law LAW.md --out out || true
+        else
+          echo INCOMPLETE > out/verdict.txt
+          printf '%s\n' '## Claim Gate' '' 'INCOMPLETE — need LAW.md and claim.json.' > out/comment.md
+        fi
+        test -f out/comment.md || echo '## Claim Gate' > out/comment.md
+        test -f out/verdict.txt || echo INCOMPLETE > out/verdict.txt
+        cat out/comment.md
+    - uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request'
+      with:
+        header: claim-gate
+        path: out/comment.md
+    - name: Fail closed
+      shell: bash
+      run: test "$(tr -d '\n' < out/verdict.txt)" = "ADMIT"
