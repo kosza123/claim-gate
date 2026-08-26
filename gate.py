@@ -374,6 +374,25 @@ def attack_matrix():
     return failures
 
 
+def lint_law(text: str):
+    problems = []
+    if not (text or "").strip():
+        return ["empty policy"]
+    try:
+        laws = parse_laws(text)
+    except Exception as exc:
+        return [f"parse error: {exc}"]
+    if not laws:
+        return ["empty policy"]
+    for law_id, law in laws.items():
+        check = law.get("check") or ""
+        if not check or check == "none":
+            problems.append(f"{law_id}: check none/missing")
+        elif check not in CHECKS:
+            problems.append(f"{law_id}: unknown check {check}")
+    return problems
+
+
 def write_out(out: Path, overall: str, md: str):
     out.mkdir(parents=True, exist_ok=True)
     (out / "verdict.txt").write_text(overall + "\n", encoding="utf-8")
@@ -389,7 +408,18 @@ def main(argv=None):
     parser.add_argument("--head-sha", default="")
     parser.add_argument("--base-sha", default="")
     parser.add_argument("--run-id", default="")
+    parser.add_argument("--lint-law", type=Path)
     args = parser.parse_args(argv)
+
+    if args.lint_law:
+        problems = lint_law(args.lint_law.read_text(encoding="utf-8"))
+        if problems:
+            md = "## Claim Gate\n\n**INCOMPLETE** — proposed LAW.md is not usable as next base policy.\n\n" + "\n".join(f"- {p}" for p in problems) + "\n"
+            write_out(args.out, "INCOMPLETE", md)
+            sys.stdout.write(md)
+            return 1
+        sys.stdout.write("LAW lint OK\n")
+        return 0
 
     if args.self_check:
         failures = attack_matrix()
