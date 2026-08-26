@@ -2,13 +2,14 @@
 
 Agent says *done*. The gate does not take that as evidence.
 
- /  /  + witness + receipt.
+ADMIT / REJECT / INCOMPLETE + witness + receipt.
 
 ## Run locally
 
+    python3 claimgate.py --self-check
+    python3 gate.py --claim fixtures/reject-balance.json
 
-
- is the judge.  is the fixture demo.
+gate.py is the judge. claimgate.py --self-check is the fixture demo.
 
 ## Live proofs (do not merge REJECT / INCOMPLETE)
 
@@ -19,6 +20,7 @@ Agent says *done*. The gate does not take that as evidence.
 
 ## Install in another repo
 
+    - uses: actions/checkout@v4
+    - uses: kosza123/claim-gate@main
 
-
-Hamada /  was copied, not edited.
+Hamada / kosza123-semantic-language-2045 was copied, not edited.
