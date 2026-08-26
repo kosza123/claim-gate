@@ -1,5 +1,11 @@
 # Claim Gate
 
+**FROZEN DEMO_ONLY — NOT_TEAM_READY**
+
+Do not add more JSON laws. The product continues as **Claim Gate Autopilot**
+(PR completion compiler: independent SHA duties + machine fix pack).
+
+
 **Label: DEMO_ONLY — NOT_TEAM_READY**
 
 Agent says *done*. That is not evidence.
